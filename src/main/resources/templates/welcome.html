@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8" />
+	<link href="/css/style.css" th:href="@{/css/style.css}" rel="stylesheet" />
+<script src="http://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script>
+$(() => {
+    $('.deleteBtn').on('click',(event) => {  //deleteBtnをクリックしたら
+        event.preventDefault(); //クリックの際に発生するデフォルトのイベントを発生させない
+        let tdList = $(event.target).parent().parent().find('td'); //tdListの値を初期化し代入
+
+        let id = $(tdList[0]).text();
+        let jsonString = {//分割代入
+            'id' : id,//文字列のidに変数のidを代入
+            'goodsName' : $(tdList[1]).text(),//文字列goodsnameに関数tdList[1]とtext()を代入
+            'price' : ''
+        };
+        $.ajax({ //ajax=JavaScriptとXMLを使って非同期にサーバとの間の通信を行うこと
+            type: 'POST',
+            url: '/ecsite/admin/api/deleteGoods',
+            data: JSON.stringify(jsonString),
+            contentType: 'application/json',
+            scriptCharset: 'utf-8'
+        })
+        .then((result) => {
+            console.log(result);
+            alert(`商品 [ ${jsonString.goodsName} ] を削除しました。`);
+            $(tdList).parent().remove();
+        }, () => {
+            console.error('Error: ajax connection failed');
+        }
+        );
+    });
+});
+</script>
+
+	<title>ECサイト</title>
+</head>
+
+<body>
+
+	<header>
+		<h1>My EC Site</h1>
+	</header>
+
+	<table id="adminTable">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>商品名</th>
+				<th>価格</th>
+				<th>削除</th>
+			</tr>
+		</thead>
+
+		<tbody>
+
+		</tbody>
+
+		<tr th:each="item:${goods}" }>
+			<td th:text="${item.id}" />
+			<td th:text="${item.goodsName}" /}>
+				<td th:text="${item.price}" />
+			<td><button type="submit" class="deleteBtn">削除</button></td>
+		</tr>
+	</table>
+
+	<form name="goodsForm" id="adminPage" method="post" action="/ecsite/admin/goodsMst"
+		th:action="@{/ecsite/admin/goodsMst}">
+		<button type="submit" th:if="${userName != null}">新規追加</button>
+		<input type="hidden" name="userName" th:value="${userName}" />
+		<input type="hidden" name="password" th:value="${password}" />
+	</form>
+
+</body>
+
+</html>
